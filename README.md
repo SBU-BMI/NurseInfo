@@ -3,6 +3,6 @@
 <hr>
 …
 
-For live app see [SBU-BMI.github.io/NurseInfo](https://SBU-BMI.github.io/NurseInfo).
+For live app see [https://SBU-BMI.github.io/NurseInfo](https://SBU-BMI.github.io/NurseInfo).
 
 …
