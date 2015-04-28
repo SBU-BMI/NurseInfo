@@ -29,7 +29,7 @@ nurseInfo.bench=function(){
             })
             // parse text
             var txt=x.target.result;
-            var a = txt.split(/[\n\r]/).map(function(r){return r.split(/\t/)}) // table array
+            var a = txt.split(/[\n\r]+/).map(function(r){return r.split(/\t/)}) // table array
             var tb = document.createElement('table')
             tb.innerHTML = jmat.table2html({columns:a[0],rows:a.slice(1,-1)})
             tb.className="table table-striped"
