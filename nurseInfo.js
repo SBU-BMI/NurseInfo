@@ -7,7 +7,7 @@ nurseInfo=function(){
 
 nurseInfo.bench=function(){
     var ui = document.getElementById('nurseInfo')
-    ui.innerHTML='<h2>Nurse Informatics Bench</h2><p><i>Under development [<a href="https://github.com/SBU-BMI/NurseInfo" target=_blank>source</a>], by <a href="http://bmi.stonybrookmedicine.edu/people" target=_blank>Jonas Almeida</a> and <a href="https://www.linkedin.com/pub/william-dan-roberts-phd/12/738/11" target=_blank>William Roberts</a> at <a href="http://stonybrookmedicine.edu" target=_blank>Stony Brook University</a></p>'
+    ui.innerHTML='<h2>Nursing Informatics Bench</h2><p><i>Under development [<a href="https://github.com/SBU-BMI/NurseInfo" target=_blank>source</a>], by <a href="http://bmi.stonybrookmedicine.edu/people" target=_blank>Jonas Almeida</a> and <a href="https://www.linkedin.com/pub/william-dan-roberts-phd/12/738/11" target=_blank>William Roberts</a> at <a href="http://stonybrookmedicine.edu" target=_blank>Stony Brook University</a></p>'
     console.log(':-)')
     // add button to load text file
     var bt = document.createElement('input')
@@ -22,6 +22,12 @@ nurseInfo.bench=function(){
         console.log('parsing '+f.name)
         var reader = new FileReader()
         reader.onload=function(x){
+            // remove existing table first, if it exists
+            var tt = $('#nurseInfo > .table')
+            tt.map(function(i){
+                tt[i].parentElement.removeChild(tt[i])
+            })
+            // parse text
             var txt=x.target.result;
             var a = txt.split(/[\n\r]/).map(function(r){return r.split(/\t/)}) // table array
             var tb = document.createElement('table')
@@ -34,7 +40,7 @@ nurseInfo.bench=function(){
         }
         reader["readAsText"](f)
 
-        console.log(Date(),evt)
+        //console.log(Date(),evt)
     }
 
 }
