@@ -6,7 +6,7 @@ nurseInfo=function(){
 
 nurseInfo.fun=function(ui){
     var divFun=document.getElementById('nurseInfoFun')
-    divFun.innerHTML='<table><tr><td>Select parameter : <select id="selectParm"></select></td><td></td></tr><tr><td id="NurseInfo_Date"></td><td "msgPRE"></td></tr></table>'
+    divFun.innerHTML='<table><tr><td>Select parameter : <select id="selectParm"></select></td><td></td></tr><tr><td id="NurseInfo_Date"></td><td id="NurseInfo_Shift"></td></tr></table>'
     // Dimensional chartind
      C = {}, D={}, G={}, U={}, R={}
     var cf = crossfilter(nurseInfo.dt.docs)
@@ -79,12 +79,54 @@ nurseInfo.fun=function(ui){
     		return JSON.stringify(nurseInfo.dt.docs[d.key],false,3)
     	})
     	//.onClick(function(){return true})
+    
 
+	C["NurseInfo_Shift"]=dc.pieChart('#NurseInfo_Shift')
+	D["NurseInfo_Shift"]=cf.dimension(function(d,i){
+    	return d.Shift
+        //return new Date(d['Date:']+' '+d["Time RRT Paged:"])
+    })
+    R["NurseInfo_Shift"]={}
+    openHealth.unique(nurseInfo.dt.tab.Shift).map(function(p){
+    	R["NurseInfo_Shift"][p]=0
+    })
+    
+    G["NurseInfo_Shift"]=D["NurseInfo_Shift"].group().reduce(
+        // reduce in
+		function(p,v){
+		    R["NurseInfo_Shift"][v.Shift]+=1
+		    return R["NurseInfo_Shift"][v.Shift]			
+		},
+		// reduce out
+		function(p,v){
+			R["NurseInfo_Shift"][v.Shift]-=1
+		    return R["NurseInfo_Shift"][v.Shift]
+		},
+		// ini
+		function(){return 0}
+    )
 
+    C["NurseInfo_Shift"]
+    	.width(250)
+		.height(220)
+		.radius(100)
+		.innerRadius(30)
+		.dimension(D["NurseInfo_Shift"])
+		.group(G["NurseInfo_Shift"])
+		/*.colors(d3.scale.linear().domain([-1,0,0.95,1.1,1.75,10]).range(["silver","green","green","yellow","red","brown"]))
+		.colorAccessor(function(d, i){
+			if(res.G_years_reduce[d.key].expt){return res.G_years_reduce[d.key].obs/res.G_years_reduce[d.key].expt}
+			else {return 0}
+        })*/
+		.title(function(d){return d.Shift});
 
     dc.renderAll();
 
     //var C_Exp = dc.bubbleChart("#suffolkExpectedPqi");
+
+
+    
+
 
 
 
@@ -130,6 +172,8 @@ nurseInfo.bench=function(){
 
         //console.log(Date(),evt)
     }
+
+
 
 }
 
