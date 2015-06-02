@@ -6,9 +6,13 @@ nurseInfo=function(){
 
 nurseInfo.fun=function(ui){
     var divFun=document.getElementById('nurseInfoFun')
-    divFun.innerHTML='<table><tr><td>Select parameter : <select id="selectParm"></select></td><td></td></tr><tr><td id="NurseInfo_Date"></td><td id="NurseInfo_Shift"></td></tr></table>'
+    divFun.innerHTML='<table><tr><td>Select parameter : <select id="selectParm"></select></td><td></td></tr><tr><td id="NurseInfo_Date"></td><td></td></tr><tr><td id="lengthOfStay"></td><td id=""></td></tr></table>'
+    //divFun.innerHTML=+'Time<table><tr><td id="NurseInfo_Shift"></td><td></td><td></td></tr></table>'
     // Dimensional chartind
-     C = {}, D={}, G={}, U={}, R={}
+    var tableTime=document.createElement('table')
+    tableTime.innerHTML='<tr><td>Time:</td><td id="Shift"></td><td id="dayOfWeek"></td></tr>'
+    divFun.appendChild(tableTime)
+    C = {}, D={}, G={}, U={}, R={}
     var cf = crossfilter(nurseInfo.dt.docs)
     
 	// Select Parameter
@@ -81,44 +85,74 @@ nurseInfo.fun=function(ui){
     	//.onClick(function(){return true})
     
 
-	C["NurseInfo_Shift"]=dc.pieChart('#NurseInfo_Shift')
-	D["NurseInfo_Shift"]=cf.dimension(function(d,i){
-    	return d.Shift
-        //return new Date(d['Date:']+' '+d["Time RRT Paged:"])
-    })
-    R["NurseInfo_Shift"]={}
-    openHealth.unique(nurseInfo.dt.tab.Shift).map(function(p){
-    	R["NurseInfo_Shift"][p]=0
-    })
+	var createPieChart=function(parm){
+		C[parm]=dc.pieChart('#'+parm)
+		D[parm]=cf.dimension(function(d,i){
+    		return d[parm]
+    	})
+    	R[parm]={}
+    	openHealth.unique(nurseInfo.dt.tab[parm]).map(function(p){
+    		R[parm][p]=0
+    	})
     
-    G["NurseInfo_Shift"]=D["NurseInfo_Shift"].group().reduce(
-        // reduce in
+    	G[parm]=D[parm].group().reduce(
+        	// reduce in
+			function(p,v){
+		    	R[parm][v[parm]]+=1
+		    	return R[parm][v[parm]]			
+			},
+			// reduce out
+			function(p,v){
+				R[parm][v[parm]]-=1
+		    	return R[parm][v[parm]]
+			},
+			// ini
+			function(){return 0}
+    	)
+
+    	C[parm]
+    		.width(250)
+			.height(220)
+			.radius(100)
+			.innerRadius(30)
+			.dimension(D[parm])
+			.group(G[parm])
+			/*.colors(d3.scale.linear().domain([-1,0,0.95,1.1,1.75,10]).range(["silver","green","green","yellow","red","brown"]))
+			.colorAccessor(function(d, i){
+				if(res.G_years_reduce[d.key].expt){return res.G_years_reduce[d.key].obs/res.G_years_reduce[d.key].expt}
+				else {return 0}
+        	})*/
+			.title(function(d){return d[parm]});
+		}
+
+
+		//lengthOfStay
+
+	/*
+	C["lengthOfStay"]=dc.boxPlot('#lengthOfStay') // Box Plot
+	D["lengthOfStay"]=cf.dimension(function(d,i){return d.lengthOfStay})
+    G["lengthOfStay"]=D["lengthOfStay"].group().reduce(
+     // reduce in
 		function(p,v){
-		    R["NurseInfo_Shift"][v.Shift]+=1
-		    return R["NurseInfo_Shift"][v.Shift]			
+		    p[0].push(v.lengthOfStay)
+		    return p			
 		},
 		// reduce out
 		function(p,v){
-			R["NurseInfo_Shift"][v.Shift]-=1
-		    return R["NurseInfo_Shift"][v.Shift]
+			p[0].splice(indexOf(v.lengthOfStay),1)
+		    return p
 		},
 		// ini
-		function(){return 0}
+		function(){return [[]]}
     )
+    C["lengthOfStay"]
+    	.dimension(D["lengthOfStay"])
+    	.group(G["lengthOfStay"])
+    */
 
-    C["NurseInfo_Shift"]
-    	.width(250)
-		.height(220)
-		.radius(100)
-		.innerRadius(30)
-		.dimension(D["NurseInfo_Shift"])
-		.group(G["NurseInfo_Shift"])
-		/*.colors(d3.scale.linear().domain([-1,0,0.95,1.1,1.75,10]).range(["silver","green","green","yellow","red","brown"]))
-		.colorAccessor(function(d, i){
-			if(res.G_years_reduce[d.key].expt){return res.G_years_reduce[d.key].obs/res.G_years_reduce[d.key].expt}
-			else {return 0}
-        })*/
-		.title(function(d){return d.Shift});
+    createPieChart("Shift")
+    createPieChart("dayOfWeek")
+    
 
     dc.renderAll();
 
@@ -159,6 +193,13 @@ nurseInfo.bench=function(){
             var txt=x.target.result;
             nurseInfo.dt={arr:txt.split(/[\n\r]+/).map(function(r){return r.split(/\t/)})} // table array
             nurseInfo.dt.docs = openHealth.arr2docs(nurseInfo.dt.arr)
+            nurseInfo.dt.docs=nurseInfo.dt.docs.map(function(d){
+            	d.lengthOfStay=(new Date(d["Discharge Date"])-new Date(d["Admission Date"]))/(1000*3600*24)
+            	d.danScore=(d["Stroke"]=="TRUE")+(d["Change in Mental Status"]=="TRUE")+(d["Acute respiratory failure"]=="TRUE")+(d["Concerned about the patient"]=="TRUE")
+            	d.dayOfWeek=(new Date(d["Date:"])).toString().slice(0,3)
+            	return d
+            })
+            // add inpatient time
             nurseInfo.dt.tab=openHealth.docs2tab(nurseInfo.dt.docs)
             var tb = document.createElement('table')
             tb.innerHTML = jmat.table2html({columns:nurseInfo.dt.arr[0],rows:nurseInfo.dt.arr.slice(1,-1)})
