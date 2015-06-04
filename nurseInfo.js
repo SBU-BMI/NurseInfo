@@ -9,9 +9,18 @@ nurseInfo.fun=function(ui){
     divFun.innerHTML='<table><tr><td>Select parameter : <select id="selectParm"></select></td><td></td></tr><tr><td id="NurseInfo_Date"></td><td></td></tr><tr><td id="lengthOfStay"></td><td id=""></td></tr></table>'
     //divFun.innerHTML=+'Time<table><tr><td id="NurseInfo_Shift"></td><td></td><td></td></tr></table>'
     // Dimensional chartind
+    var tableSeverity=document.createElement('table')
+    tableSeverity.innerHTML='<tr><td>Severity:</td><td id="danScore">Score</td><td id="Stroke">Stroke</td><td id="Change_in_Mental_Status">Change_in_Mental_Status</td><td id="Acute_respiratory_failure">Acute respiratory failure</td><td id="Concerned_about_the_patient">Concerned about the patient</td><td>...</td></tr>'
+    divFun.appendChild(tableSeverity)
     var tableTime=document.createElement('table')
-    tableTime.innerHTML='<tr><td>Time:</td><td id="Shift"></td><td id="dayOfWeek"></td></tr>'
+    tableTime.innerHTML='<tr><td>Pace:</td><td id="Shift"></td><td id="dayOfWeek"></td><td>...</td></tr>'
     divFun.appendChild(tableTime)
+    var tablePlace=document.createElement('table')
+    tablePlace.innerHTML='<tr><td>Place:</td><td id="Unit">Unit</td><td id="Unit_From">Unit From</td><td id="Unit_Transferred_to">Unit Transferred to</td><td>...</td></tr>'
+    divFun.appendChild(tablePlace)
+    var tableWho=document.createElement('table')
+    tableWho.innerHTML='<tr><td>Person:</td><td id="Primary_Responder">Primary Responder</td><td>...</td></tr>'
+    divFun.appendChild(tableWho)
     C = {}, D={}, G={}, U={}, R={}
     var cf = crossfilter(nurseInfo.dt.docs)
     
@@ -85,7 +94,7 @@ nurseInfo.fun=function(ui){
     	//.onClick(function(){return true})
     
 
-	var createPieChart=function(parm){
+	var createPieChart=function(parm,cf){
 		C[parm]=dc.pieChart('#'+parm)
 		D[parm]=cf.dimension(function(d,i){
     		return d[parm]
@@ -123,35 +132,66 @@ nurseInfo.fun=function(ui){
 				else {return 0}
         	})*/
 			.title(function(d){return d[parm]});
-		}
+	}
+
+	var createRowChart=function(parm,cf){
+		C[parm]=dc.rowChart('#'+parm.replace(/ /g,'_').replace(/\W/g,''))
+		D[parm]=cf.dimension(function(d,i){
+    		return d[parm]
+    	})
+    	R[parm]={}
+    	openHealth.unique(nurseInfo.dt.tab[parm]).map(function(p){
+    		R[parm][p]=0
+    	})
+    
+    	G[parm]=D[parm].group().reduce(
+        	// reduce in
+			function(p,v){
+		    	R[parm][v[parm]]+=1
+		    	return R[parm][v[parm]]			
+			},
+			// reduce out
+			function(p,v){
+				R[parm][v[parm]]-=1
+		    	return R[parm][v[parm]]
+			},
+			// ini
+			function(){return 0}
+    	)
+
+    	C[parm]
+    		.width(250)
+			.height(220)
+			//.x(d3.scale.ordinal().domain(["Mon","Tue","Tue","Wed","Tur","Fri","Sat","Sun"]))
+			//.y(d3.scale.linear())
+			//.elasticY(false)
+        	.elasticX(true)
+			.dimension(D[parm])
+			.group(G[parm])
+			/*.colors(d3.scale.linear().domain([-1,0,0.95,1.1,1.75,10]).range(["silver","green","green","yellow","red","brown"]))
+			.colorAccessor(function(d, i){
+				if(res.G_years_reduce[d.key].expt){return res.G_years_reduce[d.key].obs/res.G_years_reduce[d.key].expt}
+				else {return 0}
+        	})*/
+			.title(function(d){return d[parm]});
+	}
 
 
-		//lengthOfStay
 
-	/*
-	C["lengthOfStay"]=dc.boxPlot('#lengthOfStay') // Box Plot
-	D["lengthOfStay"]=cf.dimension(function(d,i){return d.lengthOfStay})
-    G["lengthOfStay"]=D["lengthOfStay"].group().reduce(
-     // reduce in
-		function(p,v){
-		    p[0].push(v.lengthOfStay)
-		    return p			
-		},
-		// reduce out
-		function(p,v){
-			p[0].splice(indexOf(v.lengthOfStay),1)
-		    return p
-		},
-		// ini
-		function(){return [[]]}
-    )
-    C["lengthOfStay"]
-    	.dimension(D["lengthOfStay"])
-    	.group(G["lengthOfStay"])
-    */
+	//d.danScore=(d["Stroke"]=="TRUE")+(d["Change in Mental Status"]=="TRUE")+(d["Acute respiratory failure"]=="TRUE")+(d["Concerned about the patient"]=="TRUE")
 
-    createPieChart("Shift")
-    createPieChart("dayOfWeek")
+	createRowChart("danScore",cf)
+	createRowChart("Stroke",cf)
+	createRowChart("Change in Mental Status",cf)
+	createRowChart("Acute respiratory failure",cf)
+	createRowChart("Concerned about the patient",cf)
+	createRowChart("Unit",cf)
+	createRowChart("Unit From:",cf)
+	createRowChart("Unit Transferred to",cf)
+	createRowChart("Primary Responder",cf)
+
+    createPieChart("Shift",cf)
+    createRowChart("dayOfWeek",cf)
     
 
     dc.renderAll();
