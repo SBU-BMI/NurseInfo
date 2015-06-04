@@ -55,7 +55,8 @@ nurseInfo.fun=function(ui){
         // reduce in
 		function(p,v){
 		    //p=10*Math.random()
-		    p=v[nurseInfo.dt.parmSelected]=="TRUE"
+		    //p=v[nurseInfo.dt.parmSelected]=="TRUE"
+		    p=v.lengthOfStay
 		    return p //v.Arrhythmia=="TRUE"			
 		},
 		// reduce out
@@ -73,8 +74,8 @@ nurseInfo.fun=function(ui){
     	.dimension(D["NurseInfo_Date"])
     	.group(G["NurseInfo_Date"])
     	.x(d3.time.scale())
-    	.y(d3.scale.linear().domain([-0.1,1.1]))
-    	.elasticY(false)
+    	.y(d3.scale.linear())//.domain([-0.1,1.1]))
+    	.elasticY(true)
         .elasticX(true)
     	.keyAccessor(function (x){
     		//return 100*Math.random()
@@ -83,7 +84,8 @@ nurseInfo.fun=function(ui){
     	})
     	.valueAccessor(function (y){
     		var d = nurseInfo.dt.docs[y.key]
-    		return d[nurseInfo.dt.parmSelected]=="TRUE"
+    		//console.log(d.lengthOfStay)
+    		return d.lengthOfStay*(d[nurseInfo.dt.parmSelected]=="TRUE")
     	})
     	.radiusValueAccessor(function (r){
     		return 1
