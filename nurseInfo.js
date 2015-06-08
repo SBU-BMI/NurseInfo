@@ -248,7 +248,7 @@ nurseInfo.fun=function(ui){
 		return R["Primary Responder"].danScore[d.key]/R["Primary Responder"][d.key]
 	},250,220)
 
-    createRowChart("Shift",cf,function(d){
+    createPieChart("Shift",cf,function(d){
 		return R["Shift"].danScore[d.key]/R["Shift"][d.key]
 	})
     createRowChart("dayOfWeek",cf,function(d){
