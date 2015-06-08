@@ -5,21 +5,27 @@ nurseInfo=function(){
 }
 
 nurseInfo.fun=function(ui){
+	colorMap={
+		domain:[0,1.5,2,3,4],
+		range:["green","yellow","orange","red","maroon"]
+		//domain:[0,1,2,3,4],
+		//range:["green","yellow","red","maroon","black"]
+	}
     var divFun=document.getElementById('nurseInfoFun')
     divFun.innerHTML='<table><tr><td>Select parameter : <select id="selectParm"></select></td><td></td></tr><tr><td id="NurseInfo_Date"></td><td></td></tr><tr><td id="lengthOfStay"></td><td id=""></td></tr></table>'
     //divFun.innerHTML=+'Time<table><tr><td id="NurseInfo_Shift"></td><td></td><td></td></tr></table>'
     // Dimensional chartind
     var tableSeverity=document.createElement('table')
-    tableSeverity.innerHTML='<tr><td>Severity:</td><td id="danScore">Score</td><td id="Stroke">Stroke</td><td id="Change_in_Mental_Status">Change_in_Mental_Status</td><td id="Acute_respiratory_failure">Acute respiratory failure</td><td id="Concerned_about_the_patient">Concerned about the patient</td><td>...</td></tr>'
+    tableSeverity.innerHTML='<tr><td><h3 style="color:navy">Severity:</h3></td><td id="danScore">Score<br></td><td id="Hypotension">Hypotension<br></td><td id="Acute_respiratory_failure">Acute respiratory failure<br></td><td id="Change_in_Mental_Status">Change_in_Mental_Status<br></td><td id="Concerned_about_the_patient">Concerned about the patient<br></td><td>...</td></tr>'
     divFun.appendChild(tableSeverity)
     var tableTime=document.createElement('table')
-    tableTime.innerHTML='<tr><td>Pace:</td><td id="Shift"></td><td id="dayOfWeek"></td><td>...</td></tr>'
+    tableTime.innerHTML='<tr><td><h3 style="color:navy">Pace:</h3></td><td id="Shift"></td><td id="dayOfWeek"></td><td>...</td></tr>'
     divFun.appendChild(tableTime)
     var tablePlace=document.createElement('table')
-    tablePlace.innerHTML='<tr><td>Place:</td><td id="Unit">Unit</td><td id="Unit_From">Unit From</td><td id="Unit_Transferred_to">Unit Transferred to</td><td>...</td></tr>'
+    tablePlace.innerHTML='<tr><td><h3 style="color:navy">Place:</h3></td><td id="Unit">Unit<br></td><td id="Unit_From">Unit From<br></td><td id="Unit_Transferred_to">Unit Transferred to<br></td><td>...</td></tr>'
     divFun.appendChild(tablePlace)
     var tableWho=document.createElement('table')
-    tableWho.innerHTML='<tr><td>Person:</td><td id="Primary_Responder">Primary Responder</td><td>...</td></tr>'
+    tableWho.innerHTML='<tr><td><h3 style="color:navy">Person:</h3></td><td id="Primary_Responder">Primary Responder<br></td><td>...</td></tr>'
     divFun.appendChild(tableWho)
     C = {}, D={}, G={}, U={}, R={}
     var cf = crossfilter(nurseInfo.dt.docs)
@@ -96,7 +102,7 @@ nurseInfo.fun=function(ui){
     	//.onClick(function(){return true})
     
 
-	var createPieChart=function(parm,cf){
+	var createPieChart=function(parm,cf,funColor){
 		C[parm]=dc.pieChart('#'+parm)
 		D[parm]=cf.dimension(function(d,i){
     		return d[parm]
@@ -109,16 +115,22 @@ nurseInfo.fun=function(ui){
     	G[parm]=D[parm].group().reduce(
         	// reduce in
 			function(p,v){
+		    	if(!R[parm].danScore[v[parm]]){R[parm].danScore[v[parm]]=0}
+		    	R[parm].danScore[v[parm]]+=v.danScore
 		    	R[parm][v[parm]]+=1
 		    	return R[parm][v[parm]]			
 			},
 			// reduce out
 			function(p,v){
-				R[parm][v[parm]]-=1
+				R[parm].danScore[v[parm]]-=v.danScore
+		    	R[parm][v[parm]]-=1
 		    	return R[parm][v[parm]]
 			},
 			// ini
-			function(){return 0}
+			function(){
+				R[parm].danScore={}
+				return 0
+			}
     	)
 
     	C[parm]
@@ -132,8 +144,15 @@ nurseInfo.fun=function(ui){
 			.colorAccessor(function(d, i){
 				if(res.G_years_reduce[d.key].expt){return res.G_years_reduce[d.key].obs/res.G_years_reduce[d.key].expt}
 				else {return 0}
-        	})*/
-			.title(function(d){return d[parm]});
+        	})
+			.title(function(d){
+				return 'lala'+d.key
+			});*/
+		if(funColor){
+			C[parm]
+				.colors(d3.scale.linear().domain(colorMap.domain).range(colorMap.range))
+				.colorAccessor(funColor)
+		}
 	}
 
 	var createRowChart=function(parm,cf,funColor){
@@ -185,7 +204,7 @@ nurseInfo.fun=function(ui){
 			.title(function(d){return d[parm]});
 		if(funColor){
 			C[parm]
-				.colors(d3.scale.linear().domain([0,1,2,3,4]).range(["green","orange","red","brown","black"]))
+				.colors(d3.scale.linear().domain(colorMap.domain).range(colorMap.range))
 				.colorAccessor(funColor)
 		}
 	}
@@ -197,8 +216,8 @@ nurseInfo.fun=function(ui){
 	createRowChart("danScore",cf,function(d){
 		return d.key
 	})
-	createRowChart("Stroke",cf,function(d){
-		return R["Stroke"].danScore[d.key]/R["Stroke"][d.key]
+	createRowChart("Hypotension",cf,function(d){
+		return R["Hypotension"].danScore[d.key]/R["Hypotension"][d.key]
 	})
 	createRowChart("Change in Mental Status",cf,function(d){
 		return R["Change in Mental Status"].danScore[d.key]/R["Change in Mental Status"][d.key]
@@ -209,22 +228,30 @@ nurseInfo.fun=function(ui){
 	createRowChart("Concerned about the patient",cf,function(d){
 		return R["Concerned about the patient"].danScore[d.key]/R["Concerned about the patient"][d.key]
 	})
-	createRowChart("Unit",cf)
-	createRowChart("Unit From:",cf)
-	createRowChart("Unit Transferred to",cf)
+	createRowChart("Unit",cf,function(d){
+		return R["Unit"].danScore[d.key]/R["Unit"][d.key]
+	})
+	createRowChart("Unit From:",cf,function(d){
+		return R["Unit From:"].danScore[d.key]/R["Unit From:"][d.key]
+	})
+	createRowChart("Unit Transferred to",cf,function(d){
+		return R["Unit Transferred to"].danScore[d.key]/R["Unit Transferred to"][d.key]
+	})
 	createRowChart("Primary Responder",cf,function(d){
 		return R["Primary Responder"].danScore[d.key]/R["Primary Responder"][d.key]
 	})
 
-    createPieChart("Shift",cf)
+    createPieChart("Shift",cf,function(d){
+		return R["Shift"].danScore[d.key]/R["Shift"][d.key]
+	})
     createRowChart("dayOfWeek",cf,function(d){
 		return R["dayOfWeek"].danScore[d.key]/R["dayOfWeek"][d.key]
 	})
     
 
     dc.renderAll();
-    $('.dc-chart g.row text').css('fill','black');
-
+    $('.dc-chart g text').css('fill','black');
+    $('#nurseInfoFun td').css({color:"blue"})
     //var C_Exp = dc.bubbleChart("#suffolkExpectedPqi");
 
 
@@ -264,7 +291,7 @@ nurseInfo.bench=function(){
             nurseInfo.dt.docs = openHealth.arr2docs(nurseInfo.dt.arr)
             nurseInfo.dt.docs=nurseInfo.dt.docs.map(function(d){
             	d.lengthOfStay=(new Date(d["Discharge Date"])-new Date(d["Admission Date"]))/(1000*3600*24)
-            	d.danScore=(d["Stroke"]=="TRUE")+(d["Change in Mental Status"]=="TRUE")+(d["Acute respiratory failure"]=="TRUE")+(d["Concerned about the patient"]=="TRUE")
+            	d.danScore=(d["Hypotension"]=="TRUE")+(d["Change in Mental Status"]=="TRUE")+(d["Acute respiratory failure"]=="TRUE")+(d["Concerned about the patient"]=="TRUE")
             	d.dayOfWeek=(new Date(d["Date:"])).toString().slice(0,3)
             	return d
             })
