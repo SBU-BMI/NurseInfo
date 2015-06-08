@@ -6,7 +6,7 @@ nurseInfo=function(){
 
 nurseInfo.fun=function(ui){
 	colorMap={
-		domain:[0,1.5,2,3,4],
+		domain:[0,1,1.5,2,4],
 		range:["green","yellow","orange","red","maroon"]
 		//domain:[0,1,2,3,4],
 		//range:["green","yellow","red","maroon","black"]
@@ -102,7 +102,9 @@ nurseInfo.fun=function(ui){
     	//.onClick(function(){return true})
     
 
-	var createPieChart=function(parm,cf,funColor){
+	var createPieChart=function(parm,cf,funColor,width,height){
+		if(!width){width=250}
+		if(!height){height=220}
 		C[parm]=dc.pieChart('#'+parm)
 		D[parm]=cf.dimension(function(d,i){
     		return d[parm]
@@ -134,8 +136,8 @@ nurseInfo.fun=function(ui){
     	)
 
     	C[parm]
-    		.width(250)
-			.height(220)
+    		.width(width)
+			.height(height)
 			.radius(100)
 			.innerRadius(30)
 			.dimension(D[parm])
@@ -155,7 +157,7 @@ nurseInfo.fun=function(ui){
 		}
 	}
 
-	var createRowChart=function(parm,cf,funColor){
+	var createRowChart=function(parm,cf,funColor,width,height){
 		C[parm]=dc.rowChart('#'+parm.replace(/ /g,'_').replace(/\W/g,''))
 		D[parm]=cf.dimension(function(d,i){
     		return d[parm]
@@ -177,7 +179,7 @@ nurseInfo.fun=function(ui){
 			function(p,v){
 				R[parm][v[parm]]-=1
 				R[parm].danScore[v[parm]]-=v.danScore
-		    	return R[parm][v[parm]]
+				return R[parm][v[parm]]
 			},
 			// ini
 			function(p,v){
@@ -187,9 +189,12 @@ nurseInfo.fun=function(ui){
 			}
     	)
 
-    	C[parm]
-    		.width(250)
-			.height(220)
+    	if(!width){width=220}
+    	else if(!height){height=G[parm].all().length*width/20}
+    	else{height=250}
+		C[parm]
+    		.width(width)
+			.height(height)
 			//.x(d3.scale.ordinal().domain(["Mon","Tue","Tue","Wed","Tur","Fri","Sat","Sun"]))
 			//.y(d3.scale.linear())
 			//.elasticY(false)
@@ -215,33 +220,35 @@ nurseInfo.fun=function(ui){
 
 	createRowChart("danScore",cf,function(d){
 		return d.key
-	})
+	},250,220)
 	createRowChart("Hypotension",cf,function(d){
 		return R["Hypotension"].danScore[d.key]/R["Hypotension"][d.key]
-	})
+	},250,220)
 	createRowChart("Change in Mental Status",cf,function(d){
 		return R["Change in Mental Status"].danScore[d.key]/R["Change in Mental Status"][d.key]
-	})
+	},250,220)
 	createRowChart("Acute respiratory failure",cf,function(d){
 		return R["Acute respiratory failure"].danScore[d.key]/R["Acute respiratory failure"][d.key]
-	})
+	},250,220)
 	createRowChart("Concerned about the patient",cf,function(d){
 		return R["Concerned about the patient"].danScore[d.key]/R["Concerned about the patient"][d.key]
-	})
+	},250,220)
 	createRowChart("Unit",cf,function(d){
 		return R["Unit"].danScore[d.key]/R["Unit"][d.key]
-	})
+	},300)
+	
 	createRowChart("Unit From:",cf,function(d){
 		return R["Unit From:"].danScore[d.key]/R["Unit From:"][d.key]
-	})
+	},300)
 	createRowChart("Unit Transferred to",cf,function(d){
 		return R["Unit Transferred to"].danScore[d.key]/R["Unit Transferred to"][d.key]
-	})
+	},300)
+	
 	createRowChart("Primary Responder",cf,function(d){
 		return R["Primary Responder"].danScore[d.key]/R["Primary Responder"][d.key]
-	})
+	},250,220)
 
-    createPieChart("Shift",cf,function(d){
+    createRowChart("Shift",cf,function(d){
 		return R["Shift"].danScore[d.key]/R["Shift"][d.key]
 	})
     createRowChart("dayOfWeek",cf,function(d){
