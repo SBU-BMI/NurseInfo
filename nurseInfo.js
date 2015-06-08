@@ -212,7 +212,9 @@ nurseInfo.fun=function(ui){
 	createRowChart("Unit",cf)
 	createRowChart("Unit From:",cf)
 	createRowChart("Unit Transferred to",cf)
-	createRowChart("Primary Responder",cf)
+	createRowChart("Primary Responder",cf,function(d){
+		return R["Primary Responder"].danScore[d.key]/R["Primary Responder"][d.key]
+	})
 
     createPieChart("Shift",cf)
     createRowChart("dayOfWeek",cf,function(d){
@@ -221,6 +223,7 @@ nurseInfo.fun=function(ui){
     
 
     dc.renderAll();
+    $('.dc-chart g.row text').css('fill','black');
 
     //var C_Exp = dc.bubbleChart("#suffolkExpectedPqi");
 
