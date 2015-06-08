@@ -136,7 +136,7 @@ nurseInfo.fun=function(ui){
 			.title(function(d){return d[parm]});
 	}
 
-	var createRowChart=function(parm,cf){
+	var createRowChart=function(parm,cf,funColor){
 		C[parm]=dc.rowChart('#'+parm.replace(/ /g,'_').replace(/\W/g,''))
 		D[parm]=cf.dimension(function(d,i){
     		return d[parm]
@@ -149,16 +149,23 @@ nurseInfo.fun=function(ui){
     	G[parm]=D[parm].group().reduce(
         	// reduce in
 			function(p,v){
+				if(!R[parm].danScore[v[parm]]){R[parm].danScore[v[parm]]=0}
 		    	R[parm][v[parm]]+=1
+		    	R[parm].danScore[v[parm]]+=v.danScore
 		    	return R[parm][v[parm]]			
 			},
 			// reduce out
 			function(p,v){
 				R[parm][v[parm]]-=1
+				R[parm].danScore[v[parm]]-=v.danScore
 		    	return R[parm][v[parm]]
 			},
 			// ini
-			function(){return 0}
+			function(p,v){
+				//R[parm].danScore={'TRUE':0,'FALSE':0}
+				R[parm].danScore={}
+				return 0
+			}
     	)
 
     	C[parm]
@@ -176,24 +183,41 @@ nurseInfo.fun=function(ui){
 				else {return 0}
         	})*/
 			.title(function(d){return d[parm]});
+		if(funColor){
+			C[parm]
+				.colors(d3.scale.linear().domain([0,1,2,3,4]).range(["green","orange","red","brown","black"]))
+				.colorAccessor(funColor)
+		}
 	}
 
 
 
 	//d.danScore=(d["Stroke"]=="TRUE")+(d["Change in Mental Status"]=="TRUE")+(d["Acute respiratory failure"]=="TRUE")+(d["Concerned about the patient"]=="TRUE")
 
-	createRowChart("danScore",cf)
-	createRowChart("Stroke",cf)
-	createRowChart("Change in Mental Status",cf)
-	createRowChart("Acute respiratory failure",cf)
-	createRowChart("Concerned about the patient",cf)
+	createRowChart("danScore",cf,function(d){
+		return d.key
+	})
+	createRowChart("Stroke",cf,function(d){
+		return R["Stroke"].danScore[d.key]/R["Stroke"][d.key]
+	})
+	createRowChart("Change in Mental Status",cf,function(d){
+		return R["Change in Mental Status"].danScore[d.key]/R["Change in Mental Status"][d.key]
+	})
+	createRowChart("Acute respiratory failure",cf,function(d){
+		return R["Acute respiratory failure"].danScore[d.key]/R["Acute respiratory failure"][d.key]
+	})
+	createRowChart("Concerned about the patient",cf,function(d){
+		return R["Concerned about the patient"].danScore[d.key]/R["Concerned about the patient"][d.key]
+	})
 	createRowChart("Unit",cf)
 	createRowChart("Unit From:",cf)
 	createRowChart("Unit Transferred to",cf)
 	createRowChart("Primary Responder",cf)
 
     createPieChart("Shift",cf)
-    createRowChart("dayOfWeek",cf)
+    createRowChart("dayOfWeek",cf,function(d){
+		return R["dayOfWeek"].danScore[d.key]/R["dayOfWeek"][d.key]
+	})
     
 
     dc.renderAll();
