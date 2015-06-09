@@ -111,6 +111,11 @@ nurseInfo.fun=function(ui){
     			}else{return 0}
     		}else{return 0}
     	})
+    	.colors(d3.scale.linear().domain(colorMap.domain).range(colorMap.range))
+		.colorAccessor(function(v,i){
+			console.log(i,nurseInfo.dt.tab.danScore[i])
+			return nurseInfo.dt.tab.danScore[i]
+		})
     	.title(function(d){
     		return JSON.stringify(nurseInfo.dt.docs[d.key],false,3)
     	})
