@@ -27,6 +27,13 @@ nurseInfo.fun=function(ui){
     var tableWho=document.createElement('table')
     tableWho.innerHTML='<tr><td><h3 style="color:navy">Person:</h3></td><td id="Primary_Responder">Primary Responder<br></td><td>...</td></tr>'
     divFun.appendChild(tableWho)
+    var tableOut=document.createElement('table')
+    tableOut.innerHTML='<tr><td><h3 style="color:navy">Outcome:</h3></td><td id="DischargeToLocation">DischargeToLocation<br></td><td>...</td></tr>'
+    divFun.appendChild(tableOut)
+    var tableAllTF=document.createElement('table')
+    tableAllTF.innerHTML='<tr id="allTFtr"><td><h3 style="color:navy">Some other TRUE/FALSE checks:</h3></td></tr>'
+    divFun.appendChild(tableAllTF)
+    
     C = {}, D={}, G={}, U={}, R={}
     var cf = crossfilter(nurseInfo.dt.docs)
     
@@ -190,7 +197,10 @@ nurseInfo.fun=function(ui){
     	)
 
     	if(!width){width=220}
-    	else if(!height){height=G[parm].all().length*width/20}
+    	else if(!height){
+    		height=50+G[parm].all().length*width/18
+    		//console.log(parm,width,height)
+    	}
     	else{height=250}
 		C[parm]
     		.width(width)
@@ -223,16 +233,16 @@ nurseInfo.fun=function(ui){
 	},250,220)
 	createRowChart("Hypotension",cf,function(d){
 		return R["Hypotension"].danScore[d.key]/R["Hypotension"][d.key]
-	},250,220)
+	},180,220)
 	createRowChart("Change in Mental Status",cf,function(d){
 		return R["Change in Mental Status"].danScore[d.key]/R["Change in Mental Status"][d.key]
-	},250,220)
+	},180,220)
 	createRowChart("Acute respiratory failure",cf,function(d){
 		return R["Acute respiratory failure"].danScore[d.key]/R["Acute respiratory failure"][d.key]
-	},250,220)
+	},180,220)
 	createRowChart("Concerned about the patient",cf,function(d){
 		return R["Concerned about the patient"].danScore[d.key]/R["Concerned about the patient"][d.key]
-	},250,220)
+	},180,220)
 	createRowChart("Unit",cf,function(d){
 		return R["Unit"].danScore[d.key]/R["Unit"][d.key]
 	},300)
@@ -246,7 +256,7 @@ nurseInfo.fun=function(ui){
 	
 	createRowChart("Primary Responder",cf,function(d){
 		return R["Primary Responder"].danScore[d.key]/R["Primary Responder"][d.key]
-	},250,220)
+	},300)
 
     createPieChart("Shift",cf,function(d){
 		return R["Shift"].danScore[d.key]/R["Shift"][d.key]
@@ -254,6 +264,37 @@ nurseInfo.fun=function(ui){
     createRowChart("dayOfWeek",cf,function(d){
 		return R["dayOfWeek"].danScore[d.key]/R["dayOfWeek"][d.key]
 	})
+
+	createRowChart("DischargeToLocation",cf,function(d){
+		return R["DischargeToLocation"].danScore[d.key]/R["DischargeToLocation"][d.key]
+	},300)
+
+
+	// ALl TRUE FALSE Checks
+	var parmsTR=document.getElementById("allTFtr")
+	var j=0
+	parms.map(function(pi,i){
+		// created td
+		if((!R[pi])&(openHealth.unique(nurseInfo.dt.tab[pi]).length>1)){
+			j++
+			if(j<20){
+				console.log(j,pi)
+				var td=document.createElement('td')
+				parmsTR.appendChild(td)
+				td.innerHTML=pi+'<br>'
+				td.id=pi.replace(/ /g,'_').replace(/\W/g,'')
+				createRowChart(pi,cf,function(d){
+					return R[pi].danScore[d.key]/R[pi][d.key]
+				},200)
+			}
+		}
+	})
+	4
+	
+
+
+
+	
     
 
     dc.renderAll();
