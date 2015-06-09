@@ -12,21 +12,21 @@ nurseInfo.fun=function(ui){
 		//range:["green","yellow","red","maroon","black"]
 	}
     var divFun=document.getElementById('nurseInfoFun')
-    divFun.innerHTML='<table><tr><td>Select parameter : <select id="selectParm"></select></td><td></td></tr><tr><td id="NurseInfo_Date"></td><td></td></tr><tr><td id="lengthOfStay"></td><td id=""></td></tr></table>'
+    divFun.innerHTML='<table><tr><td>Select parameter : <select id="selectParm"></select></td><td></td></tr><tr><td id="NurseInfo_Date"></td><td></td></tr></table>'
     //divFun.innerHTML=+'Time<table><tr><td id="NurseInfo_Shift"></td><td></td><td></td></tr></table>'
     // Dimensional chartind
     var tableSeverity=document.createElement('table')
     tableSeverity.innerHTML='<tr><td><h3 style="color:navy">Severity:</h3></td><td id="danScore">Score<br></td><td id="Hypotension">Hypotension<br></td><td id="Acute_respiratory_failure">Acute respiratory failure<br></td><td id="Change_in_Mental_Status">Change_in_Mental_Status<br></td><td id="Concerned_about_the_patient">Concerned about the patient<br></td><td>...</td></tr>'
     divFun.appendChild(tableSeverity)
     var tableTime=document.createElement('table')
-    tableTime.innerHTML='<tr><td><h3 style="color:navy">Pace:</h3></td><td id="Shift"></td><td id="dayOfWeek"></td><td>...</td></tr>'
+    tableTime.innerHTML='<tr><td><h3 style="color:navy">Pace:</h3></td><td id="Shift"></td><td id="dayOfWeek"></td><td id="lengthOfStay">LengthOfStay over time<br></td></tr>'
     divFun.appendChild(tableTime)
     var tablePlace=document.createElement('table')
-    tablePlace.innerHTML='<tr><td><h3 style="color:navy">Place:</h3></td><td id="Unit">Unit<br></td><td id="Unit_From">Unit From<br></td><td id="Unit_Transferred_to">Unit Transferred to<br></td><td>...</td></tr>'
+    tablePlace.innerHTML='<tr><td><h3 style="color:navy">Place/Team:</h3></td><td id="Unit" style="vertical-align:top">Unit<br></td><td id="Unit_From" style="vertical-align:top">Unit From<br></td><td id="Unit_Transferred_to" style="vertical-align:top">Unit Transferred to<br></td><td id="Primary_Responder" style="vertical-align:top">Primary Responder<br></td><td>...</td></tr>'
     divFun.appendChild(tablePlace)
-    var tableWho=document.createElement('table')
-    tableWho.innerHTML='<tr><td><h3 style="color:navy">Person:</h3></td><td id="Primary_Responder">Primary Responder<br></td><td>...</td></tr>'
-    divFun.appendChild(tableWho)
+    //var tableWho=document.createElement('table')
+    //tableWho.innerHTML='<tr><td><h3 style="color:navy">Person:</h3></td><td id="Primary_Responder">Primary Responder<br></td><td>...</td></tr>'
+    //divFun.appendChild(tableWho)
     var tableOut=document.createElement('table')
     tableOut.innerHTML='<tr><td><h3 style="color:navy">Outcome:</h3></td><td id="DischargeToLocation">DischargeToLocation<br></td><td>...</td></tr>'
     divFun.appendChild(tableOut)
@@ -40,8 +40,9 @@ nurseInfo.fun=function(ui){
 	// Select Parameter
 	var sel = document.getElementById("selectParm")
 	var parms = Object.getOwnPropertyNames(nurseInfo.dt.tab).filter(function(p){
-		return nurseInfo.dt.tab[p][0]=="TRUE"||nurseInfo.dt.tab[p][0]=="FALSE"
+		return (nurseInfo.dt.tab[p][0]=="TRUE"||nurseInfo.dt.tab[p][0]=="FALSE")&(openHealth.unique(nurseInfo.dt.tab[p]).length==2)
 	})
+	sel.innerHTML='<option value="All">All</option>'
 	parms.map(function(p){
 		var op = document.createElement('option')
 		op.value=p
@@ -53,7 +54,10 @@ nurseInfo.fun=function(ui){
 	sel.onchange=function(){
 		nurseInfo.dt.parmSelected=sel.value
 		//Ci = C["NurseInfo_Date"]
+		//dc.renderAll()
 		dc.renderAll()
+		$('.dc-chart g text').css('fill','black');
+    	$('#nurseInfoFun td').css({color:"blue"})
 	}
 
 
@@ -98,10 +102,14 @@ nurseInfo.fun=function(ui){
     	.valueAccessor(function (y){
     		var d = nurseInfo.dt.docs[y.key]
     		//console.log(d.lengthOfStay)
-    		return d.lengthOfStay*(d[nurseInfo.dt.parmSelected]=="TRUE")
+    		return d.lengthOfStay//*(d[nurseInfo.dt.parmSelected]=="TRUE")
     	})
     	.radiusValueAccessor(function (r){
-    		return 1
+    		if(r.key!="All"){
+    			if(nurseInfo.dt.tab[nurseInfo.dt.parmSelected][r.key]=="TRUE"){
+    				return 1
+    			}else{return 0}
+    		}else{return 0}
     	})
     	.title(function(d){
     		return JSON.stringify(nurseInfo.dt.docs[d.key],false,3)
@@ -277,8 +285,8 @@ nurseInfo.fun=function(ui){
 		// created td
 		if((!R[pi])&(openHealth.unique(nurseInfo.dt.tab[pi]).length>1)){
 			j++
-			if(j<20){
-				console.log(j,pi)
+			if(j<19){
+				//console.log(j,pi)
 				var td=document.createElement('td')
 				parmsTR.appendChild(td)
 				td.innerHTML=pi+'<br>'
@@ -291,6 +299,77 @@ nurseInfo.fun=function(ui){
 	})
 	4
 	
+
+	// length of stay over time, id="lengthOfStay"
+
+	var createBarChart=function(parm,cf,funColor,width,height){
+		C[parm]=dc.barChart('#'+parm.replace(/ /g,'_').replace(/\W/g,''))
+		D[parm]=cf.dimension(function(d,i){
+    		return new Date(d["Date:"])//d["Date:"]
+    	})
+    	R[parm]={}
+    	openHealth.unique(nurseInfo.dt.tab["Date:"]).map(function(p){
+    		R[parm][new Date(p)]=0
+    	})
+    
+    	G[parm]=D[parm].group().reduce(
+        	// reduce in
+			function(p,v){
+				R[parm][new Date(v["Date:"])]+=v[parm]
+		    	R[parm].danScore+=v.danScore
+		    	return R[parm][new Date(v["Date:"])]			
+			},
+			// reduce out
+			function(p,v){
+				R[parm][new Date(v["Date:"])]-=v[parm]
+		    	R[parm].danScore+=v.danScore
+		    	return R[parm][new Date(v["Date:"])]		
+			},
+			// ini
+			function(p,v){
+				//R[parm].danScore={'TRUE':0,'FALSE':0}
+				R[parm].danScore=0
+				return 0
+			}
+    	)
+
+    	if(!width){width=220}
+    	else if(!height){
+    		height=50+G[parm].all().length*width/18
+    		//console.log(parm,width,height)
+    	}
+    	else{height=250}
+		C[parm]
+    		.width(width)
+			.height(height)
+			.x(d3.time.scale())
+			//.y(d3.scale.log())
+			//.x(d3.scale.ordinal().domain(["Mon","Tue","Tue","Wed","Tur","Fri","Sat","Sun"]))
+			//.y(d3.scale.linear())
+			//.elasticY(false)
+        	.elasticX(true)
+			.dimension(D[parm])
+			.group(G[parm])
+			/*.colors(d3.scale.linear().domain([-1,0,0.95,1.1,1.75,10]).range(["silver","green","green","yellow","red","brown"]))
+			.colorAccessor(function(d, i){
+				if(res.G_years_reduce[d.key].expt){return res.G_years_reduce[d.key].obs/res.G_years_reduce[d.key].expt}
+				else {return 0}
+        	})*/
+			.title(function(d){return d[parm]});
+		if(funColor){
+			C[parm]
+				.colors(d3.scale.linear().domain(colorMap.domain).range(colorMap.range))
+				.colorAccessor(funColor)
+		}
+	}
+
+	// lengthOfStay
+
+	createBarChart("lengthOfStay",cf,function(d){
+		return R["lengthOfStay"].danScore/R.lengthOfStay[d.key]
+	},1500,300)
+
+
 
 
 
@@ -341,16 +420,18 @@ nurseInfo.bench=function(){
             	d.lengthOfStay=(new Date(d["Discharge Date"])-new Date(d["Admission Date"]))/(1000*3600*24)
             	d.danScore=(d["Hypotension"]=="TRUE")+(d["Change in Mental Status"]=="TRUE")+(d["Acute respiratory failure"]=="TRUE")+(d["Concerned about the patient"]=="TRUE")
             	d.dayOfWeek=(new Date(d["Date:"])).toString().slice(0,3)
+            	d.All="TRUE"
             	return d
             })
-            // add inpatient time
             nurseInfo.dt.tab=openHealth.docs2tab(nurseInfo.dt.docs)
-            var tb = document.createElement('table')
-            tb.innerHTML = jmat.table2html({columns:nurseInfo.dt.arr[0],rows:nurseInfo.dt.arr.slice(1,-1)})
-            tb.className="table table-striped"
-            ui.appendChild(tb)
+            // add inpatient time
+            nurseInfo.createTable=function(){
+            	var tb = document.createElement('table')
+            	tb.innerHTML = jmat.table2html({columns:nurseInfo.dt.arr[0],rows:nurseInfo.dt.arr.slice(1,-1)})
+            	tb.className="table table-striped"
+            	ui.appendChild(tb)	
+            }
             nurseInfo.fun(ui)
-
             //console.log(txt)
         }
         reader["readAsText"](f)
