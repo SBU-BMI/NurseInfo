@@ -12,7 +12,7 @@ nurseInfo.fun=function(ui){
 		//range:["green","yellow","red","maroon","black"]
 	}
     var divFun=document.getElementById('nurseInfoFun')
-    divFun.innerHTML='<table><tr><td>Select parameter : <select id="selectParm"></select></td><td></td></tr><tr><td id="NurseInfo_Date"></td><td></td></tr></table>'
+    divFun.innerHTML='<table><tr><td>Select parameter : <select id="selectParm"></select>, individual patient selector (color=severity, area=length of stay, y-axis time of the day RRT paged):</td><td></td></tr><tr><td id="NurseInfo_Date"></td><td></td></tr></table>'
     //divFun.innerHTML=+'Time<table><tr><td id="NurseInfo_Shift"></td><td></td><td></td></tr></table>'
     // Dimensional chartind
     var tableSeverity=document.createElement('table')
@@ -86,35 +86,35 @@ nurseInfo.fun=function(ui){
     )
 
     C["NurseInfo_Date"]
-    	.width(1000)
-    	.height(200)
+    	.width(2000)
+    	.height(500)
     	.dimension(D["NurseInfo_Date"])
     	.group(G["NurseInfo_Date"])
     	.x(d3.time.scale())
-    	.y(d3.scale.linear())//.domain([-0.1,1.1]))
+    	.y(d3.scale.linear().range([1,10]))//.domain([-0.1,1.1]))
     	.elasticY(true)
         .elasticX(true)
     	.keyAccessor(function (x){
     		//return 100*Math.random()
     		var d = nurseInfo.dt.docs[x.key]
-    		return new Date(d['Date:']+' '+d["Time RRT Paged:"])
+    		return new Date(d['Date:'])//+' '+d["Time RRT Paged:"])
     	})
     	.valueAccessor(function (y){
     		var d = nurseInfo.dt.docs[y.key]
     		//console.log(d.lengthOfStay)
-    		return d.lengthOfStay//*(d[nurseInfo.dt.parmSelected]=="TRUE")
+    		return d["Time RRT Paged:"]//d.lengthOfStay//*(d[nurseInfo.dt.parmSelected]=="TRUE")
     	})
     	.radiusValueAccessor(function (r){
     		if(r.key!="All"){
     			if(nurseInfo.dt.tab[nurseInfo.dt.parmSelected][r.key]=="TRUE"){
-    				return 1
+    				return Math.sqrt(nurseInfo.dt.docs[r.key].lengthOfStay/10)
     			}else{return 0}
-    		}else{return 0}
+    		}else{return Math.sqrt(nurseInfo.dt.docs[r.key].lengthOfStay/10)}
     	})
     	.colors(d3.scale.linear().domain(colorMap.domain).range(colorMap.range))
 		.colorAccessor(function(v,i){
-			console.log(i,nurseInfo.dt.tab.danScore[i])
-			return nurseInfo.dt.tab.danScore[i]
+			//console.log(i,nurseInfo.dt.tab.danScore[i])
+			return nurseInfo.dt.docs[v.key].danScore//Math.random()*10
 		})
     	.title(function(d){
     		return JSON.stringify(nurseInfo.dt.docs[d.key],false,3)
@@ -372,7 +372,7 @@ nurseInfo.fun=function(ui){
 
 	createBarChart("lengthOfStay",cf,function(d){
 		return R["lengthOfStay"].danScore/R.lengthOfStay[d.key]
-	},1500,300)
+	},2000,500)
 
 
 
@@ -426,6 +426,8 @@ nurseInfo.bench=function(){
             	d.danScore=(d["Hypotension"]=="TRUE")+(d["Change in Mental Status"]=="TRUE")+(d["Acute respiratory failure"]=="TRUE")+(d["Concerned about the patient"]=="TRUE")
             	d.dayOfWeek=(new Date(d["Date:"])).toString().slice(0,3)
             	d.All="TRUE"
+            	var t = d["Time RRT Paged:"].split(':')
+            	d["Time RRT Paged:"]=parseFloat(t[0])+parseFloat(t[1]/60)
             	return d
             })
             nurseInfo.dt.tab=openHealth.docs2tab(nurseInfo.dt.docs)
