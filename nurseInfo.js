@@ -348,30 +348,33 @@ nurseInfo.fun=function(ui){
 	var createBarChart=function(parm,cf,funColor,width,height){
 		C[parm]=dc.barChart('#'+parm.replace(/ /g,'_').replace(/\W/g,''))
 		D[parm]=cf.dimension(function(d,i){
-    		return new Date(d["Date:"])//d["Date:"]
+    		return new Date(d.Date)//d["Date:"]
     	})
-    	R[parm]={}
-    	openHealth.unique(nurseInfo.dt.tab["Date:"]).map(function(p){
-    		R[parm][new Date(p)]=0
+    	R[parm]={danScore:{},n:{}}
+    	openHealth.unique(nurseInfo.dt.tab.Date).map(function(p){
+    		R[parm][p]=0
+    		R[parm].danScore[p]=0
+    		R[parm].n[p]=0
     	})
     
     	G[parm]=D[parm].group().reduce(
         	// reduce in
 			function(p,v){
-				R[parm][new Date(v["Date:"])]+=v[parm]
-		    	R[parm].danScore+=v.danScore
-		    	return R[parm][new Date(v["Date:"])]			
+				R[parm][v.Date]+=v[parm]
+		    	R[parm].danScore[v.Date]+=v.danScore
+		    	R[parm].n[v.Date]+=1
+		    	return R[parm][v.Date]			
 			},
 			// reduce out
 			function(p,v){
-				R[parm][new Date(v["Date:"])]-=v[parm]
-		    	R[parm].danScore+=v.danScore
-		    	return R[parm][new Date(v["Date:"])]		
+				R[parm][v.Date]-=v[parm]
+		    	R[parm].danScore[v.Date]-=v.danScore
+		    	R[parm].n[v.Date]-=1
+		    	return R[parm][v.Date]			
 			},
 			// ini
 			function(p,v){
 				//R[parm].danScore={'TRUE':0,'FALSE':0}
-				R[parm].danScore=0
 				return 0
 			}
     	)
@@ -539,7 +542,9 @@ nurseInfo.fun=function(ui){
 	},300,300)
 
 	createBarChart("lengthOfStay",cf,function(d){
-		return R["lengthOfStay"].danScore/R.lengthOfStay[d.key]
+		if(R.lengthOfStay.n[d.key]>0){
+			return R.lengthOfStay.danScore[d.key]/R.lengthOfStay.n[d.key]
+		}else{return 0}
 	},2000,500)
 
 
@@ -603,11 +608,12 @@ nurseInfo.bench=function(){
             		else{return y}
             	})(d.lengthOfStay)
             	d.danScore=(d["Hypotension"]=="TRUE")+(d["Change in Mental Status"]=="TRUE")+(d["Acute respiratory failure"]=="TRUE")+(d["Concerned about the patient"]=="TRUE")
-            	d.dayOfWeek=(new Date(d["Date:"])).toString().slice(0,3)
             	d.All="TRUE"
             	var t = d["Time RRT Paged:"].split(':')
             	d["Time RRT Paged:"]=parseFloat(t[0])+parseFloat(t[1]/60)
             	d.i=i
+            	d.Date=new Date(d["Date:"])
+            	d.dayOfWeek=d.Date.toString().slice(0,3)
             	// privacy please !
             	if((function(x){
             		var y=true, xx=["Physician", "Nurse Practitioner", "Both", "No Documentation",""]
@@ -618,6 +624,7 @@ nurseInfo.bench=function(){
             	})(d["Primary Responder"])){
             		d["Primary Responder"]="id removed"
             	}
+            	d.MNR=d.Encounter='XXXXXXXX'
             	// end of provacy protection
             	return d
             })
