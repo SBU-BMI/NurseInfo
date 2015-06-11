@@ -191,7 +191,7 @@ nurseInfo.fun=function(ui){
 		}
 	}
 
-	var createRowChart=function(parm,cf,funColor,width,height){
+	var createRowChart=function(parm,cf,funColor,width,height,funOrder){
 		C[parm]=dc.rowChart('#'+parm.replace(/ /g,'_').replace(/\W/g,''))
 		D[parm]=cf.dimension(function(d,i){
     		return d[parm]
@@ -248,6 +248,10 @@ nurseInfo.fun=function(ui){
 			C[parm]
 				.colors(d3.scale.linear().domain(colorMap.domain).range(colorMap.range))
 				.colorAccessor(funColor)
+		}
+		if(funOrder){
+			C[parm]
+				.ordering(funOrder)
 		}
 	}
 
@@ -497,7 +501,32 @@ nurseInfo.fun=function(ui){
 	})
     createRowChart("dayOfWeek",cf,function(d){
 		return R["dayOfWeek"].danScore[d.key]/R["dayOfWeek"][d.key]
-	},300,300)
+	},300,300,function(day){
+		// ordering days of the week
+		switch(day.key){
+			case "Sun":
+				return 0
+				break
+			case "Mon":
+				return 1
+				break
+			case "Tue":
+				return 2
+				break
+			case "Wed":
+				return 3
+				break
+			case "Thu":
+				return 4
+				break
+			case "Fri":
+				return 5
+				break
+			case "Sat":
+				return 6
+				break
+		}
+	})
 
 	createRowChart("DischargeToLocation",cf,function(d){
 		return R["DischargeToLocation"].danScore[d.key]/R["DischargeToLocation"][d.key]
