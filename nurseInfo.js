@@ -632,7 +632,7 @@ nurseInfo.bench=function(){
             	})(d["Primary Responder"])){
             		d["Primary Responder"]="id removed"
             	}
-            	d.MNR=d.Encounter='XXXXXXXX'
+            	d["MRN"]=d.Encounter=d["Patient First Name"]=d["Patient Last Name"]='XXXXXXXX'
             	// end of provacy protection
             	return d
             })
