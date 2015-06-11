@@ -13,7 +13,15 @@ nurseInfo.fun=function(ui){
 		//range:["green","yellow","red","maroon","black"]
 	}
     var divFun=document.getElementById('nurseInfoFun')
-    divFun.innerHTML='<table><tr><td>Show individual patients for parameter <select id="selectParm"></select> (color=severity, area=length of stay, y-axis time of the day RRT paged):</td><td></td></tr><tr><td id="NurseInfo_Date"></td><td></td></tr><tr><td id="lengthOfStay">LengthOfStay over time<br></td></tr></table>'
+    divFun.innerHTML='<input type="button" value="reload" id="reload" style="color:red"> <input type="button" value="replot" id="replot" style="color:green" hidden="true"><table><tr><td>Show individual patients for parameter <select id="selectParm"></select> (color=severity, area=length of stay, y-axis time of the day RRT paged):</td><td></td></tr><tr><td id="NurseInfo_Date"></td><td></td></tr><tr><td id="lengthOfStay">LengthOfStay over time<br></td></tr></table>'
+    reload.style.fontSize=replot.style.fontSize="large"
+    reload.onclick=function(){
+    	location.reload()
+    }
+    replot.onclick=function(){
+    	location.reload()
+    }
+
     //divFun.innerHTML=+'Time<table><tr><td id="NurseInfo_Shift"></td><td></td><td></td></tr></table>'
     // Dimensional chartind
     var tableSeverity=document.createElement('table')
