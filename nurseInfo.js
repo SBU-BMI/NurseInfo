@@ -17,10 +17,10 @@ nurseInfo.fun=function(ui){
     //divFun.innerHTML=+'Time<table><tr><td id="NurseInfo_Shift"></td><td></td><td></td></tr></table>'
     // Dimensional chartind
     var tableSeverity=document.createElement('table')
-    tableSeverity.innerHTML='<tr><td><h3 style="color:navy">Severity:<br>(ARORI score)</h3></td><td id="danScore">Score<br></td><td id="Hypotension">Hypotension<br></td><td id="Acute_respiratory_failure">Acute respiratory failure<br></td><td id="Change_in_Mental_Status">Change_in_Mental_Status<br></td><td id="Concerned_about_the_patient">Concerned about the patient<br></td><td><h3 style="color:navy">Outcome:</h3></td><td id="DischargeToLocation">DischargeToLocation<br></td></tr>'
+    tableSeverity.innerHTML='<tr><td><h3 style="color:navy">Severity:<br>(ARORI score)</h3></td><td id="danScore">Score<br></td><td id="Hypotension">Hypotension<br></td><td id="Acute_respiratory_failure">Acute respiratory failure<br></td><td id="Change_in_Mental_Status">Change_in_Mental_Status<br></td><td id="Concerned_about_the_patient">Concerned about the patient<br></td><td><h3 style="color:navy">Outcome:</h3></td><td id="DischargeToLocation">DischargeToLocation<br></td><td id="All" style="vertical-align:top">Number of Patients Selected<br></td></tr>'
     divFun.appendChild(tableSeverity)
     var tableTime=document.createElement('table')
-    tableTime.innerHTML='<tr><td><h3 style="color:navy">Pace:</h3></td><td id="Shift"></td><td id="dayOfWeek"></td></tr>'
+    tableTime.innerHTML='<tr><td><h3 style="color:navy">Pace:</h3></td><td id="Shift"></td><td id="dayOfWeek"></td><td id="patientsPerLengthOfStay">Number of Patients per length of stay</td></tr>'
     divFun.appendChild(tableTime)
     var tablePlace=document.createElement('table')
     tablePlace.innerHTML='<tr><td><h3 style="color:navy">Place/Team:</h3></td><td id="Unit" style="vertical-align:top">Unit<br></td><td id="Unit_From" style="vertical-align:top">Unit From<br></td><td id="Unit_Transferred_to" style="vertical-align:top">Unit Transferred to<br></td><td id="Primary_Responder" style="vertical-align:top">Primary Responder<br></td><td>...</td></tr>'
@@ -33,7 +33,7 @@ nurseInfo.fun=function(ui){
     divFun.appendChild(tableOut)
     var tableAllTF=document.createElement('table')
     tableAllTF.innerHTML='<tr id="allTFtr"><td><h3 style="color:navy">Some other TRUE/FALSE checks:</h3></td></tr>'
-    divFun.appendChild(tableAllTF)
+    // divFun.appendChild(tableAllTF) // <-- table deactivated
     
     C = {}, D={}, G={}, U={}, R={}
     var cf = crossfilter(nurseInfo.dt.docs)
@@ -137,7 +137,7 @@ nurseInfo.fun=function(ui){
     		R[parm][p]=0
     	})
 
-    	nurseInfo.dt.patientsSelected={}  // I'm putting it here because there is only one piechart
+    	//nurseInfo.dt.patientsSelected={}  // I'm putting it here because there is only one piechart
     
     	G[parm]=D[parm].group().reduce(
         	// reduce in
@@ -145,14 +145,14 @@ nurseInfo.fun=function(ui){
 		    	if(!R[parm].danScore[v[parm]]){R[parm].danScore[v[parm]]=0}
 		    	R[parm].danScore[v[parm]]+=v.danScore
 		    	R[parm][v[parm]]+=1
-		    	nurseInfo.dt.patientsSelected[v.i]=true
+		    	//nurseInfo.dt.patientsSelected[v.i]=true
 		    	return R[parm][v[parm]]			
 			},
 			// reduce out
 			function(p,v){
 				R[parm].danScore[v[parm]]-=v.danScore
 		    	R[parm][v[parm]]-=1
-		    	nurseInfo.dt.patientsSelected[v.i]=false
+		    	//nurseInfo.dt.patientsSelected[v.i]=false
 		    	return R[parm][v[parm]]
 			},
 			// ini
@@ -245,6 +245,62 @@ nurseInfo.fun=function(ui){
 		}
 	}
 
+	var createAllPatients=function(cf,funColor,width,height){
+		var parm="All"
+		C[parm]=dc.rowChart('#'+parm.replace(/ /g,'_').replace(/\W/g,''))
+		D[parm]=cf.dimension(function(d,i){
+    		return d[parm]
+    	})
+    	R[parm]={}
+    	openHealth.unique(nurseInfo.dt.tab[parm]).map(function(p){
+    		R[parm][p]=0
+    	})
+
+    	nurseInfo.dt.patientsSelected={}  // I'm putting it here because there is only one of these
+    
+    	G[parm]=D[parm].group().reduce(
+        	// reduce in
+			function(p,v){
+				if(!R[parm].danScore[v[parm]]){R[parm].danScore[v[parm]]=0}
+		    	R[parm][v[parm]]+=1
+		    	R[parm].danScore[v[parm]]+=v.danScore
+		    	nurseInfo.dt.patientsSelected[v.i]=true
+		    	return R[parm][v[parm]]			
+			},
+			// reduce out
+			function(p,v){
+				R[parm][v[parm]]-=1
+				R[parm].danScore[v[parm]]-=v.danScore
+				nurseInfo.dt.patientsSelected[v.i]=false
+				return R[parm][v[parm]]
+			},
+			// ini
+			function(p,v){
+				//R[parm].danScore={'TRUE':0,'FALSE':0}
+				R[parm].danScore={}
+				return 0
+			}
+    	)
+
+    	C[parm]
+    		.width(520)
+			.height(100)
+			.elasticX(false)
+			.dimension(D[parm])
+			.group(G[parm])
+			.label(function(d){
+				var nTrue=Object.getOwnPropertyNames(nurseInfo.dt.patientsSelected).filter(function(i){return nurseInfo.dt.patientsSelected[i]}).length
+				var nAll=nurseInfo.dt.docs.length
+				return nTrue+"/"+nAll+" ("+Math.round(100*nTrue/nAll)+"%)"//d[parm]
+			})
+
+		if(funColor){
+			C[parm]
+				.colors(d3.scale.linear().domain(colorMap.domain).range(colorMap.range))
+				.colorAccessor(funColor)
+		}
+	}
+
 
 
 	//d.danScore=(d["Stroke"]=="TRUE")+(d["Change in Mental Status"]=="TRUE")+(d["Acute respiratory failure"]=="TRUE")+(d["Concerned about the patient"]=="TRUE")
@@ -290,7 +346,11 @@ nurseInfo.fun=function(ui){
 		return R["DischargeToLocation"].danScore[d.key]/R["DischargeToLocation"][d.key]
 	},300,300)
 
-	createNurseInfo_Date()
+	createAllPatients(cf,function(d){
+		return R["All"].danScore[d.key]/R["All"][d.key]
+	})
+
+	
 
 
 	// ALl TRUE FALSE Checks
@@ -386,12 +446,64 @@ nurseInfo.fun=function(ui){
 		return R["lengthOfStay"].danScore/R.lengthOfStay[d.key]
 	},2000,500)
 
+	var createPatientsPerLengthOfStay=function(cf,funColor){
+		parm="lengthOfStayInt"
+		C[parm]=dc.barChart('#patientsPerLengthOfStay')
+		D[parm]=cf.dimension(function(d,i){
+    		return d[parm]
+    	})
+    	R[parm]={danScore:{}}
+    	openHealth.unique(nurseInfo.dt.tab[parm]).map(function(p){
+    		R[parm].danScore[p]=0
+    		R[parm][p]=0
+    		//R[parm][new Date(p)]=0
+    	})
+    
+    	G[parm]=D[parm].group().reduce(
+        	// reduce in
+			function(p,v){
+				//R[parm][new Date(v["Date:"])]+=v[parm]
+				R[parm][v[parm]]+=1 
+		    	R[parm].danScore[v[parm]]+=v.danScore
+		    	return R[parm][v[parm]]	
+			},
+			// reduce out
+			function(p,v){
+				R[parm][v[parm]]-=1 
+		    	R[parm].danScore[v[parm]]-=v.danScore
+		    	return R[parm][v[parm]]			
+			},
+			// ini
+			function(p,v){
+				//R[parm].danScore={'TRUE':0,'FALSE':0}
+				//R[parm].danScore=0
+				return 0
+			}
+    	)
+
+    	C[parm]
+    		.width(1500)
+			.height(500)
+			.x(d3.scale.linear())
+			.elasticY(true)
+        	.elasticX(true)
+			.dimension(D[parm])
+			.group(G[parm])
+			.title(function(d){return d[parm]})
+			.colors(d3.scale.linear().domain(colorMap.domain).range(colorMap.range))
+			.colorAccessor(function(d){
+				return R[parm].danScore[d.key]/d.value
+			})
+		
+	}
+
 
 
 
 
 	
-    
+    createNurseInfo_Date()
+    createPatientsPerLengthOfStay(cf)
 
     dc.renderAll();
     $('.dc-chart g text').css('fill','black');
@@ -410,7 +522,8 @@ nurseInfo.fun=function(ui){
 
 nurseInfo.bench=function(){
     var ui = document.getElementById('nurseInfo')
-    ui.innerHTML='<h2>Nursing Informatics Bench (<a href="#"><img height=60 src="http://www.youtube.com/yt/brand/media/image/YouTube-logo-full_color.png"></a>)</h2><p><i>Under development [<a href="https://github.com/SBU-BMI/NurseInfo" target=_blank>source</a>], by <a href="http://bmi.stonybrookmedicine.edu/people" target=_blank>Jonas Almeida</a> and <a href="https://www.linkedin.com/pub/william-dan-roberts-phd/12/738/11" target=_blank>William Roberts</a> at <a href="http://stonybrookmedicine.edu" target=_blank>Stony Brook University</a></p><div id="nurseInfoFun"></div><hr>'
+    ui.innerHTML='<h2>Nursing Informatics Bench @ <a href="#"><img height=60 src="http://stonybrookmedicine.edu/sites/all/themes/SBMtemplate/images/SBMed-logo.png"></a></h2><p><i>Under development [<a href="https://github.com/SBU-BMI/NurseInfo" target=_blank>source</a>], by <a href="http://bmi.stonybrookmedicine.edu/people" target=_blank>Jonas Almeida</a> and <a href="https://www.linkedin.com/pub/william-dan-roberts-phd/12/738/11" target=_blank>William Roberts</a> at <a href="http://stonybrookmedicine.edu" target=_blank>Stony Brook University</a></p><div id="nurseInfoFun"></div><hr>'
+    // http://www.youtube.com/yt/brand/media/image/YouTube-logo-full_color.png
     // add button to load text file
     var bt = document.createElement('input')
     bt.id="loadReportButton"
@@ -435,6 +548,7 @@ nurseInfo.bench=function(){
             nurseInfo.dt.docs = openHealth.arr2docs(nurseInfo.dt.arr)
             nurseInfo.dt.docs=nurseInfo.dt.docs.map(function(d,i){
             	d.lengthOfStay=(new Date(d["Discharge Date"])-new Date(d["Admission Date"]))/(1000*3600*24)
+            	d.lengthOfStayInt=Math.round(d.lengthOfStay)
             	d.danScore=(d["Hypotension"]=="TRUE")+(d["Change in Mental Status"]=="TRUE")+(d["Acute respiratory failure"]=="TRUE")+(d["Concerned about the patient"]=="TRUE")
             	d.dayOfWeek=(new Date(d["Date:"])).toString().slice(0,3)
             	d.All="TRUE"
