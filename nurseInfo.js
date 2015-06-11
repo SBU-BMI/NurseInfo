@@ -34,6 +34,12 @@ nurseInfo.fun=function(ui){
     var tableAllTF=document.createElement('table')
     tableAllTF.innerHTML='<tr id="allTFtr"><td><h3 style="color:navy">Some other TRUE/FALSE checks:</h3></td></tr>'
     // divFun.appendChild(tableAllTF) // <-- table deactivated
+
+    var patientTableDiv=document.createElement('div')
+    patientTableDiv.innerHTML='<hr><input type="button" value="Show Selected Patients">'
+    divFun.appendChild(patientTableDiv) // <-- table deactivated
+
+
     
     C = {}, D={}, G={}, U={}, R={}
     var cf = crossfilter(nurseInfo.dt.docs)
@@ -399,10 +405,7 @@ nurseInfo.fun=function(ui){
 
 	// lengthOfStay
 
-	createBarChart("lengthOfStay",cf,function(d){
-		return R["lengthOfStay"].danScore/R.lengthOfStay[d.key]
-	},2000,500)
-
+	
 	var createPatientsPerLengthOfStay=function(cf,funColor){
 		parm="lengthOfStayInt"
 		C[parm]=dc.barChart('#patientsPerLengthOfStay')
@@ -500,7 +503,15 @@ nurseInfo.fun=function(ui){
 		return R["DischargeToLocation"].danScore[d.key]/R["DischargeToLocation"][d.key]
 	},300,300)
 
+	createBarChart("lengthOfStay",cf,function(d){
+		return R["lengthOfStay"].danScore/R.lengthOfStay[d.key]
+	},2000,500)
+
+
 	createAllPatients(cf,function(d){
+		setTimeout(function(){
+			//nurseInfo.createTable()
+		},1000)
 		return R["All"].danScore[d.key]/R["All"][d.key]
 	})
 
@@ -525,7 +536,7 @@ nurseInfo.fun=function(ui){
 
 nurseInfo.bench=function(){
     var ui = document.getElementById('nurseInfo')
-    ui.innerHTML='<h2>Nursing Informatics Bench @ <a href="#"><img height=60 src="http://stonybrookmedicine.edu/sites/all/themes/SBMtemplate/images/SBMed-logo.png"></a></h2><p><i>Under development [<a href="https://github.com/SBU-BMI/NurseInfo" target=_blank>source</a>], by <a href="http://bmi.stonybrookmedicine.edu/people" target=_blank>Jonas Almeida</a> and <a href="https://www.linkedin.com/pub/william-dan-roberts-phd/12/738/11" target=_blank>William Roberts</a> at <a href="http://stonybrookmedicine.edu" target=_blank>Stony Brook University</a></p><div id="nurseInfoFun"></div><hr>'
+    ui.innerHTML='<h2>Nursing Informatics Bench @ <a href="#"><img height=60 src="http://stonybrookmedicine.edu/sites/all/themes/SBMtemplate/images/SBMed-logo.png"></a></h2><p><i>Under development [<a href="https://github.com/SBU-BMI/NurseInfo" target=_blank>source</a>], by <a href="http://bmi.stonybrookmedicine.edu/people" target=_blank>Jonas Almeida</a> and <a href="https://www.linkedin.com/pub/william-dan-roberts-phd/12/738/11" target=_blank>Dan Roberts</a> at <a href="http://stonybrookmedicine.edu" target=_blank>Stony Brook University</a></p><div id="nurseInfoFun"></div><hr>'
     // http://www.youtube.com/yt/brand/media/image/YouTube-logo-full_color.png
     // add button to load text file
     var bt = document.createElement('input')
