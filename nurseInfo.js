@@ -414,7 +414,9 @@ nurseInfo.fun=function(ui){
 		parm="lengthOfStayInt"
 		C[parm]=dc.barChart('#patientsPerLengthOfStay')
 		D[parm]=cf.dimension(function(d,i){
-    		return d[parm]
+    		if(!isNaN(d[parm])){
+    			return d[parm]
+    		}	
     	})
     	R[parm]={danScore:{}}
     	openHealth.unique(nurseInfo.dt.tab[parm]).map(function(p){
@@ -426,15 +428,18 @@ nurseInfo.fun=function(ui){
     	G[parm]=D[parm].group().reduce(
         	// reduce in
 			function(p,v){
-				//R[parm][new Date(v["Date:"])]+=v[parm]
-				R[parm][v[parm]]+=1 
-		    	R[parm].danScore[v[parm]]+=v.danScore
+				if(v[parm]>0){
+					R[parm][v[parm]]+=1 
+		    		R[parm].danScore[v[parm]]+=v.danScore
+		    	}
 		    	return R[parm][v[parm]]	
 			},
 			// reduce out
 			function(p,v){
-				R[parm][v[parm]]-=1 
-		    	R[parm].danScore[v[parm]]-=v.danScore
+				if(v[parm]>0){
+					R[parm][v[parm]]-=1 
+		    		R[parm].danScore[v[parm]]-=v.danScore
+		    	}
 		    	return R[parm][v[parm]]			
 			},
 			// ini
@@ -458,6 +463,7 @@ nurseInfo.fun=function(ui){
 			.colorAccessor(function(d){
 				return R[parm].danScore[d.key]/d.value
 			})
+			
 		
 	}
 
@@ -591,13 +597,28 @@ nurseInfo.bench=function(){
             nurseInfo.dt.docs = openHealth.arr2docs(nurseInfo.dt.arr)
             nurseInfo.dt.docs=nurseInfo.dt.docs.map(function(d,i){
             	d.lengthOfStay=(new Date(d["Discharge Date"])-new Date(d["Admission Date"]))/(1000*3600*24)
-            	d.lengthOfStayInt=Math.round(d.lengthOfStay)
+            	d.lengthOfStayInt=(function(x){
+            		var y = Math.floor(x+1)
+            		if(isNaN(y)){return 0}
+            		else{return y}
+            	})(d.lengthOfStay)
             	d.danScore=(d["Hypotension"]=="TRUE")+(d["Change in Mental Status"]=="TRUE")+(d["Acute respiratory failure"]=="TRUE")+(d["Concerned about the patient"]=="TRUE")
             	d.dayOfWeek=(new Date(d["Date:"])).toString().slice(0,3)
             	d.All="TRUE"
             	var t = d["Time RRT Paged:"].split(':')
             	d["Time RRT Paged:"]=parseFloat(t[0])+parseFloat(t[1]/60)
             	d.i=i
+            	// privacy please !
+            	if((function(x){
+            		var y=true, xx=["Physician", "Nurse Practitioner", "Both", "No Documentation",""]
+            		xx.forEach(function(xi){
+            			if(x==xi){y=false}
+            		})
+            		return y
+            	})(d["Primary Responder"])){
+            		d["Primary Responder"]="id removed"
+            	}
+            	// end of provacy protection
             	return d
             })
             nurseInfo.dt.tab=openHealth.docs2tab(nurseInfo.dt.docs)
