@@ -305,51 +305,7 @@ nurseInfo.fun=function(ui){
 
 	//d.danScore=(d["Stroke"]=="TRUE")+(d["Change in Mental Status"]=="TRUE")+(d["Acute respiratory failure"]=="TRUE")+(d["Concerned about the patient"]=="TRUE")
 
-	createRowChart("danScore",cf,function(d){
-		return d.key
-	},250,220)
-	createRowChart("Hypotension",cf,function(d){
-		return R["Hypotension"].danScore[d.key]/R["Hypotension"][d.key]
-	},180,220)
-	createRowChart("Change in Mental Status",cf,function(d){
-		return R["Change in Mental Status"].danScore[d.key]/R["Change in Mental Status"][d.key]
-	},180,220)
-	createRowChart("Acute respiratory failure",cf,function(d){
-		return R["Acute respiratory failure"].danScore[d.key]/R["Acute respiratory failure"][d.key]
-	},180,220)
-	createRowChart("Concerned about the patient",cf,function(d){
-		return R["Concerned about the patient"].danScore[d.key]/R["Concerned about the patient"][d.key]
-	},180,220)
-	createRowChart("Unit",cf,function(d){
-		return R["Unit"].danScore[d.key]/R["Unit"][d.key]
-	},300)
 	
-	createRowChart("Unit From:",cf,function(d){
-		return R["Unit From:"].danScore[d.key]/R["Unit From:"][d.key]
-	},300)
-	createRowChart("Unit Transferred to",cf,function(d){
-		return R["Unit Transferred to"].danScore[d.key]/R["Unit Transferred to"][d.key]
-	},300)
-	
-	createRowChart("Primary Responder",cf,function(d){
-		return R["Primary Responder"].danScore[d.key]/R["Primary Responder"][d.key]
-	},300)
-
-    createPieChart("Shift",cf,function(d){
-		return R["Shift"].danScore[d.key]/R["Shift"][d.key]
-	})
-    createRowChart("dayOfWeek",cf,function(d){
-		return R["dayOfWeek"].danScore[d.key]/R["dayOfWeek"][d.key]
-	})
-
-	createRowChart("DischargeToLocation",cf,function(d){
-		return R["DischargeToLocation"].danScore[d.key]/R["DischargeToLocation"][d.key]
-	},300,300)
-
-	createAllPatients(cf,function(d){
-		return R["All"].danScore[d.key]/R["All"][d.key]
-	})
-
 	
 
 
@@ -420,6 +376,7 @@ nurseInfo.fun=function(ui){
     		.width(width)
 			.height(height)
 			.x(d3.time.scale())
+			.xUnits(function(){return 365})
 			//.y(d3.scale.log())
 			//.x(d3.scale.ordinal().domain(["Mon","Tue","Tue","Wed","Tur","Fri","Sat","Sun"]))
 			//.y(d3.scale.linear())
@@ -502,6 +459,52 @@ nurseInfo.fun=function(ui){
 
 
 	
+    createRowChart("danScore",cf,function(d){
+		return d.key
+	},250,220)
+	createRowChart("Hypotension",cf,function(d){
+		return R["Hypotension"].danScore[d.key]/R["Hypotension"][d.key]
+	},180,220)
+	createRowChart("Change in Mental Status",cf,function(d){
+		return R["Change in Mental Status"].danScore[d.key]/R["Change in Mental Status"][d.key]
+	},180,220)
+	createRowChart("Acute respiratory failure",cf,function(d){
+		return R["Acute respiratory failure"].danScore[d.key]/R["Acute respiratory failure"][d.key]
+	},180,220)
+	createRowChart("Concerned about the patient",cf,function(d){
+		return R["Concerned about the patient"].danScore[d.key]/R["Concerned about the patient"][d.key]
+	},180,220)
+	createRowChart("Unit",cf,function(d){
+		return R["Unit"].danScore[d.key]/R["Unit"][d.key]
+	},300)
+	
+	createRowChart("Unit From:",cf,function(d){
+		return R["Unit From:"].danScore[d.key]/R["Unit From:"][d.key]
+	},300)
+	createRowChart("Unit Transferred to",cf,function(d){
+		return R["Unit Transferred to"].danScore[d.key]/R["Unit Transferred to"][d.key]
+	},300)
+	
+	createRowChart("Primary Responder",cf,function(d){
+		return R["Primary Responder"].danScore[d.key]/R["Primary Responder"][d.key]
+	},300)
+
+    createPieChart("Shift",cf,function(d){
+		return R["Shift"].danScore[d.key]/R["Shift"][d.key]
+	})
+    createRowChart("dayOfWeek",cf,function(d){
+		return R["dayOfWeek"].danScore[d.key]/R["dayOfWeek"][d.key]
+	})
+
+	createRowChart("DischargeToLocation",cf,function(d){
+		return R["DischargeToLocation"].danScore[d.key]/R["DischargeToLocation"][d.key]
+	},300,300)
+
+	createAllPatients(cf,function(d){
+		return R["All"].danScore[d.key]/R["All"][d.key]
+	})
+
+
     createNurseInfo_Date()
     createPatientsPerLengthOfStay(cf)
 
