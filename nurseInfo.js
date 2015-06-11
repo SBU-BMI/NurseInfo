@@ -443,7 +443,7 @@ nurseInfo.fun=function(ui){
 
     	C[parm]
     		.width(1500)
-			.height(500)
+			.height(250)
 			.x(d3.scale.linear())
 			.elasticY(true)
         	.elasticX(true)
@@ -497,7 +497,7 @@ nurseInfo.fun=function(ui){
 	})
     createRowChart("dayOfWeek",cf,function(d){
 		return R["dayOfWeek"].danScore[d.key]/R["dayOfWeek"][d.key]
-	})
+	},300,300)
 
 	createRowChart("DischargeToLocation",cf,function(d){
 		return R["DischargeToLocation"].danScore[d.key]/R["DischargeToLocation"][d.key]
