@@ -13,13 +13,17 @@ nurseInfo.fun=function(ui){
 		//range:["green","yellow","red","maroon","black"]
 	}
     var divFun=document.getElementById('nurseInfoFun')
-    divFun.innerHTML='<input type="button" value="reload" id="reload" style="color:red"> <input type="button" value="replot" id="replot" style="color:green" hidden="true"><table><tr><td>Show individual patients for parameter <select id="selectParm"></select> (color=severity, area=length of stay, y-axis time of the day RRT paged):</td><td></td></tr><tr><td id="NurseInfo_Date"></td><td></td></tr><tr><td id="lengthOfStay">LengthOfStay over time<br></td></tr></table>'
+    divFun.innerHTML='<input type="button" value="reload" id="reload" style="color:red"> <input type="button" value="replot" id="replot" style="color:green"><table><tr><td>Show individual patients for parameter <select id="selectParm"></select> (color=severity, area=length of stay, y-axis time of the day RRT paged):</td><td></td></tr><tr><td id="NurseInfo_Date"></td><td></td></tr><tr><td id="lengthOfStay">LengthOfStay over time<br></td></tr></table>'
     reload.style.fontSize=replot.style.fontSize="large"
     reload.onclick=function(){
     	location.reload()
     }
     replot.onclick=function(){
-    	location.reload()
+    	//location.reload()
+    	//var ui=document.getElementById("nurseInfo")
+    	//nurseInfoFun.innerHTML=""
+    	//4
+    	alert("Replot not Working yet Dan, should be done soon ...")
     }
 
     //divFun.innerHTML=+'Time<table><tr><td id="NurseInfo_Shift"></td><td></td><td></td></tr></table>'
@@ -663,6 +667,7 @@ nurseInfo.bench=function(){
             	d["MRN"]=d.Encounter=d["Patient First Name"]=d["Patient Last Name"]='XXXXXXXX'
             	// end of provacy protection
             	return d
+            	
             })
             nurseInfo.dt.tab=openHealth.docs2tab(nurseInfo.dt.docs)
             // add inpatient time
@@ -688,9 +693,13 @@ nurseInfo.bench=function(){
 
 nurseInfo.showHideTable=function(tb){
 	if(tb){
-		$('tr',tb).map(function(i,tr){
-			tr.hidden=!nurseInfo.dt.patientsSelected[i-2]
-		})
+		setTimeout(function(){ // with a little lag to stay out of graphic rendering
+			$('tr',tb).map(function(i,tr){
+				if(i>0){
+					tr.hidden=!nurseInfo.dt.patientsSelected[i-2]
+				}
+			})	
+		},1000)
 	}
 }
 				
