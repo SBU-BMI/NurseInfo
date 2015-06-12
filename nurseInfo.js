@@ -44,7 +44,19 @@ nurseInfo.fun=function(ui){
     // divFun.appendChild(tableAllTF) // <-- table deactivated
 
     var patientTableDiv=document.createElement('div')
-    patientTableDiv.innerHTML='<hr><input type="button" value="Show Selected Patients">'
+    patientTableDiv.innerHTML='<hr><input type="button" value="Show Selected Patients" id="selectedPatients" hidden="true"><input type="button" value="Hide Patient table" id="hidePatients" hidden="true">'
+    
+    setTimeout(function(){
+    	document.getElementById("selectedPatients").onclick=function(){
+    		nurseInfo.createTable()
+    		document.getElementById("selectedPatients").hidden=true
+    		document.getElementById("hidePatients").hidden=false
+    	}
+    	document.getElementById("selectedPatients").hidden=false
+    	document.getElementById("loadReportButton").parentNode.removeChild(document.getElementById("loadReportButton"))
+    },1000)
+    
+
     divFun.appendChild(patientTableDiv) // <-- table deactivated
 
 
@@ -645,6 +657,7 @@ nurseInfo.bench=function(){
             	ui.appendChild(tb)	
             }
             nurseInfo.fun(ui)
+            
             //console.log(txt)
         }
         reader["readAsText"](f)
