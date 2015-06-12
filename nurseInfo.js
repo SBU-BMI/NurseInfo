@@ -44,7 +44,7 @@ nurseInfo.fun=function(ui){
     // divFun.appendChild(tableAllTF) // <-- table deactivated
 
     var patientTableDiv=document.createElement('div')
-    patientTableDiv.innerHTML='<hr><input type="button" value="Show Selected Patients (Warning: it will expose the raw, potentially sensitive data!)" id="selectedPatients" hidden="true" style="color:red"><input type="button" value="Hide Patient table" id="hidePatients" hidden="true" style="color:green">'
+    patientTableDiv.innerHTML='<hr><input type="button" value="Show Patients Selected (Warning: it will expose the raw, potentially sensitive data!)" id="selectedPatients" hidden="true" style="color:red;fontSize=large"><input type="button" value="Hide Patient table" id="hidePatients" hidden="true" style="color:green;fontSize=large">'
     
     setTimeout(function(){
     	document.getElementById("selectedPatients").onclick=function(){
