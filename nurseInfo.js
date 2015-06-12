@@ -50,6 +50,7 @@ nurseInfo.fun=function(ui){
     	document.getElementById("selectedPatients").onclick=function(){
     		if(!document.getElementById("patientTableTb")){
     			nurseInfo.createTable()
+    			nurseInfo.showHideTable(document.getElementById("patientTableTb"))
     		}else{
     			document.getElementById("patientTableTb").hidden=false
     		}
@@ -213,7 +214,7 @@ nurseInfo.fun=function(ui){
 				else {return 0}
         	})
 			.title(function(d,i){
-				console.log(d)
+"All"				console.log(d)
 				return 'lala'+d.key
 			});*/
 		if(funColor){
@@ -333,7 +334,10 @@ nurseInfo.fun=function(ui){
 			.label(function(d){
 				var nTrue=Object.getOwnPropertyNames(nurseInfo.dt.patientsSelected).filter(function(i){return nurseInfo.dt.patientsSelected[i]}).length
 				var nAll=nurseInfo.dt.docs.length
+				// hide/show patients in table
+				nurseInfo.showHideTable(document.getElementById("patientTableTb"))
 				return nTrue+"/"+nAll+" ("+Math.round(100*nTrue/nAll)+"%)"//d[parm]
+				
 			})
 
 		if(funColor){
@@ -665,7 +669,7 @@ nurseInfo.bench=function(){
             nurseInfo.createTable=function(){
             	var tb = document.createElement('table')
             	tb.id="patientTableTb"
-            	tb.innerHTML = jmat.table2html({columns:nurseInfo.dt.arr[0],rows:nurseInfo.dt.arr.slice(1,-1)})
+            	tb.innerHTML = jmat.table2html({columns:["#"].concat(nurseInfo.dt.arr[0]),rows:nurseInfo.dt.arr.slice(1,-1).map(function(a,i){return [i].concat(a)})})
             	tb.className="table table-striped"
             	ui.appendChild(tb)	
             }
@@ -682,5 +686,13 @@ nurseInfo.bench=function(){
 
 }
 
+nurseInfo.showHideTable=function(tb){
+	if(tb){
+		$('tr',tb).map(function(i,tr){
+			tr.hidden=!nurseInfo.dt.patientsSelected[i-2]
+		})
+	}
+}
+				
 
 nurseInfo();
