@@ -44,15 +44,27 @@ nurseInfo.fun=function(ui){
     // divFun.appendChild(tableAllTF) // <-- table deactivated
 
     var patientTableDiv=document.createElement('div')
-    patientTableDiv.innerHTML='<hr><input type="button" value="Show Selected Patients" id="selectedPatients" hidden="true"><input type="button" value="Hide Patient table" id="hidePatients" hidden="true">'
+    patientTableDiv.innerHTML='<hr><input type="button" value="Show Selected Patients (Warning: it will expose the raw, potentially sensitive data!)" id="selectedPatients" hidden="true" style="color:red"><input type="button" value="Hide Patient table" id="hidePatients" hidden="true" style="color:green">'
     
     setTimeout(function(){
     	document.getElementById("selectedPatients").onclick=function(){
-    		nurseInfo.createTable()
+    		if(!document.getElementById("patientTableTb")){
+    			nurseInfo.createTable()
+    		}else{
+    			document.getElementById("patientTableTb").hidden=false
+    		}
+    		
     		document.getElementById("selectedPatients").hidden=true
     		document.getElementById("hidePatients").hidden=false
     	}
+    	document.getElementById("hidePatients").onclick=function(){
+    		//nurseInfo.createTable()
+    		document.getElementById("selectedPatients").hidden=false
+    		document.getElementById("hidePatients").hidden=true
+    		document.getElementById("patientTableTb").hidden=true
+    	}
     	document.getElementById("selectedPatients").hidden=false
+    	document.getElementById("loadReportButton").hidden=true
     	document.getElementById("loadReportButton").parentNode.removeChild(document.getElementById("loadReportButton"))
     },1000)
     
@@ -652,6 +664,7 @@ nurseInfo.bench=function(){
             // add inpatient time
             nurseInfo.createTable=function(){
             	var tb = document.createElement('table')
+            	tb.id="patientTableTb"
             	tb.innerHTML = jmat.table2html({columns:nurseInfo.dt.arr[0],rows:nurseInfo.dt.arr.slice(1,-1)})
             	tb.className="table table-striped"
             	ui.appendChild(tb)	
