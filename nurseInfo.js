@@ -19,11 +19,15 @@ nurseInfo.fun=function(ui){
     	location.reload()
     }
     replot.onclick=function(){
+    	dc.filterAll();dc.renderAll()
+    	$('.dc-chart g text').css('fill','black');
     	//location.reload()
     	//var ui=document.getElementById("nurseInfo")
     	//nurseInfoFun.innerHTML=""
+    	//nurseInfo.fun(ui)
+    	//nurseInfo.txt()
     	//4
-    	alert("Replot not Working yet Dan, should be done soon ...")
+    	//alert("Replot not Working yet Dan, should be done soon ...")
     }
 
     //divFun.innerHTML=+'Time<table><tr><td id="NurseInfo_Shift"></td><td></td><td></td></tr></table>'
@@ -237,6 +241,8 @@ nurseInfo.fun=function(ui){
     	openHealth.unique(nurseInfo.dt.tab[parm]).map(function(p){
     		R[parm][p]=0
     	})
+    	//console.log(parm)
+    	R[parm].danScore={}
     
     	G[parm]=D[parm].group().reduce(
         	// reduce in
@@ -255,7 +261,7 @@ nurseInfo.fun=function(ui){
 			// ini
 			function(p,v){
 				//R[parm].danScore={'TRUE':0,'FALSE':0}
-				R[parm].danScore={}
+				//R[parm].danScore={}
 				return 0
 			}
     	)
@@ -518,11 +524,11 @@ nurseInfo.fun=function(ui){
     createRowChart("danScore",cf,function(d){
 		return d.key
 	},250,220)
-	createRowChart("Hypotension",cf,function(d){
-		return R["Hypotension"].danScore[d.key]/R["Hypotension"][d.key]
-	},180,220)
 	createRowChart("Change in Mental Status",cf,function(d){
 		return R["Change in Mental Status"].danScore[d.key]/R["Change in Mental Status"][d.key]
+	},180,220)
+	createRowChart("Hypotension",cf,function(d){
+		return R["Hypotension"].danScore[d.key]/R["Hypotension"][d.key]
 	},180,220)
 	createRowChart("Acute respiratory failure",cf,function(d){
 		return R["Acute respiratory failure"].danScore[d.key]/R["Acute respiratory failure"][d.key]
@@ -638,6 +644,7 @@ nurseInfo.bench=function(){
             })
             // parse text
             var txt=x.target.result;
+            //nurseInfo.txt=function(){
             nurseInfo.dt={arr:txt.split(/[\n\r]+/).map(function(r){return r.split(/\t/)})} // table array
             nurseInfo.dt.docs = openHealth.arr2docs(nurseInfo.dt.arr)
             nurseInfo.dt.docs=nurseInfo.dt.docs.map(function(d,i){
@@ -679,6 +686,8 @@ nurseInfo.bench=function(){
             	ui.appendChild(tb)	
             }
             nurseInfo.fun(ui)
+            //}
+            //nurseInfo.txt()
             
             //console.log(txt)
         }
